@@ -429,9 +429,6 @@
                 <div class="message assistant">
                     <div class="message-avatar">AI</div>
                     <div class="message-content">
-                        <div class="message-bubble">
-                            ¡Hola! Soy tu compañero de práctica. I'll help you speak Spanish faster and more naturally with dialect-specific feedback for ${currentDialect === 'paisa' ? 'Paisa' : 'Boricua'} Spanish. I'll point out when you're using constructions that slow you down and suggest faster, more colloquial alternatives. Ready to practice?
-                        </div>
                     </div>
                 </div>
             </div>
@@ -501,6 +498,11 @@
             API_KEY = apiKey;
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'flex';
+            addMessage(
+             `¡Hola! Soy tu compañero de práctica. I'll help you speak Spanish faster and more naturally with dialect-specific feedback for ${currentDialect === 'paisa' ? 'Paisa' : 'Boricua'} Spanish. I'll point out when you're using constructions that slow you down and suggest faster, more colloquial alternatives. Ready to practice?`,
+             'assistant'
+);
+
             
             // Initialize speech recognition if available
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
