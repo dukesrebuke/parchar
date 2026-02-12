@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parchar - Spanish Practice Buddy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .container {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 900px;
+        width: 100%;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header h1 {
+        font-size: 28px;
+        font-weight: 600;
+    }
+
+    .dialect-toggle {
+        display: flex;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px;
+        border-radius: 12px;
+    }
+
+    .dialect-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+
+    .dialect-btn.active {
+        background: white;
+        color: #667eea;
+    }
+
+    .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        background: #f8f9fa;
+    }
+
+    .message {
+        margin-bottom: 16px;
+        display: flex;
+        gap: 12px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message.user {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .user .message-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .assistant .message-avatar {
+        background: #e9ecef;
+    }
+
+    .message-content {
+        max-width: 70%;
+    }
+
+    .message-bubble {
+        padding: 12px 16px;
+        border-radius: 16px;
+        line-height: 1.5;
+    }
+
+    .user .message-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .assistant .message-bubble {
+        background: white;
+        color: #333;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .feedback-card {
+        margin-top: 8px;
+        padding: 12px;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .feedback-card.severe {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+    }
+
+    .feedback-card.dialect {
+        background: #d1ecf1;
+        border-left-color: #17a2b8;
+    }
+
+    .feedback-label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .dialect-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .paisa {
+        background: #ff6b6b;
+        color: white;
+    }
+
+    .boricua {
+        background: #4ecdc4;
+        color: white;
+    }
+
+    .input-area {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .input-controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .input-field {
+        flex: 1;
+        padding: 14px 18px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: border-color 0.3s;
+        font-family: inherit;
+    }
+
+    .input-field:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .voice-btn, .send-btn {
+        padding: 14px 24px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        font-size: 15px;
+    }
+
+    .voice-btn {
+        background: #f8f9fa;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .voice-btn:hover {
+        background: #e9ecef;
+    }
+
+    .voice-btn.recording {
+        background: #dc3545;
+        color: white;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .send-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .send-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .mode-toggle {
+        display: flex;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .mode-btn {
+        padding: 6px 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .mode-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .stats-bar {
+        display: flex;
+        gap: 16px;
+        padding: 12px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .stat {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .loading {
+        display: flex;
+        gap: 4px;
+        padding: 12px 16px;
+    }
+
+    .loading-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #667eea;
+        animation: bounce 1.4s infinite;
+    }
+
+    .loading-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .loading-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+    }
+
+    .setup-screen {
+        padding: 40px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .setup-screen h2 {
+        color: #333;
+        font-size: 24px;
+    }
+
+    .setup-screen p {
+        color: #666;
+        line-height: 1.6;
+        max-width: 500px;
+    }
+
+    .api-input {
+        width: 100%;
+        max-width: 500px;
+        padding: 14px 18px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: monospace;
+    }
+
+    .start-btn {
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .start-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .transcript {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 8px;
+        font-size: 13px;
+        color: #667eea;
+        font-style: italic;
+    }
+
+    .cultural-note {
+        margin-top: 8px;
+        padding: 10px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 8px;
+        font-size: 13px;
+        border-left: 3px solid #667eea;
+    }
+
+    .cultural-note-title {
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 4px;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div id="setupScreen" class="setup-screen">
+            <h2>Parchar - Your Spanish Practice Buddy</h2>
+            <p>Practice Spanish with AI-powered feedback focused on Paisa (Colombian) and Boricua (Puerto Rican) dialects. Get intelligent corrections, cultural context, and track your progress.</p>
+            <input type="password" id="apiKeyInput" class="api-input" placeholder="Enter your Google AI API Key">
+            <p style="font-size: 13px; color: #999;">Get your free API key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #667eea;">aistudio.google.com/apikey</a></p>
+            <button class="start-btn" onclick="startApp()">Start Practicing</button>
+        </div>
+
+```
+    <div id="mainApp" style="display: none; flex-direction: column; height: 100%;">
+        <div class="header">
+            <h1>Parchar</h1>
+            <div class="dialect-toggle">
+                <button class="dialect-btn active" data-dialect="paisa" onclick="setDialect('paisa')">Paisa</button>
+                <button class="dialect-btn" data-dialect="boricua" onclick="setDialect('boricua')">Boricua</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant">
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ¡Hola! Soy tu compañero de práctica. I'll help you speak Spanish faster and more naturally with dialect-specific feedback for ${currentDialect === 'paisa' ? 'Paisa' : 'Boricua'} Spanish. I'll point out when you're using constructions that slow you down and suggest faster, more colloquial alternatives. Ready to practice?
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <span>Messages:</span>
+                <span class="stat-value" id="messageCount">0</span>
+            </div>
+            <div class="stat">
+                <span>Corrections:</span>
+                <span class="stat-value" id="correctionCount">0</span>
+            </div>
+            <div class="stat">
+                <span>Current Topic:</span>
+                <span class="stat-value" id="currentTopic">Casual Conversation</span>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="setMode('text')">Text</button>
+                <button class="mode-btn" onclick="setMode('voice')">Voice</button>
+            </div>
+            <div class="input-controls">
+                <input type="text" id="messageInput" class="input-field" placeholder="Escribe en español..." onkeypress="handleKeyPress(event)">
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" style="display: none;">
+                    <span id="voiceIcon">MIC</span>
+                    <span id="voiceText">Hold to Speak</span>
+                </button>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let API_KEY = '';
+    let currentDialect = 'paisa';
+    let conversationHistory = [];
+    let messageCount = 0;
+    let correctionCount = 0;
+    let isRecording = false;
+    let recognition = null;
+    let currentMode = 'text';
+    const MAX_HISTORY = 6; // Only keep last 6 messages (3 exchanges) to minimize tokens
+
+    const dialectInfo = {
+        paisa: {
+            region: 'Medellín, Colombia',
+            characteristics: 'voseo, diminutives, distinctive vocabulary',
+            examples: ['vos sos', 'parce', 'gonorrea', 'berraco']
+        },
+        boricua: {
+            region: 'Puerto Rico',
+            characteristics: 'aspirated s, dropped final consonants, unique vocabulary',
+            examples: ['wepa', 'bendito', 'chavos', 'bochinche']
+        }
+    };
+
+    function startApp() {
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        if (!apiKey) {
+            alert('Please enter your Google AI API key');
+            return;
+        }
+        API_KEY = apiKey;
+        document.getElementById('setupScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        
+        // Initialize speech recognition if available
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('messageInput').value = transcript;
+                sendMessage(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                stopRecording();
+            };
+
+            recognition.onend = () => {
+                stopRecording();
+            };
+        }
+    }
+
+    function setDialect(dialect) {
+        currentDialect = dialect;
+        document.querySelectorAll('.dialect-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.dialect === dialect);
+        });
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.toLowerCase().includes(mode));
+        });
+
+        const messageInput = document.getElementById('messageInput');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const sendBtn = document.getElementById('sendBtn');
+
+        if (mode === 'voice') {
+            messageInput.style.display = 'none';
+            sendBtn.style.display = 'none';
+            voiceBtn.style.display = 'flex';
+        } else {
+            messageInput.style.display = 'block';
+            sendBtn.style.display = 'block';
+            voiceBtn.style.display = 'none';
+        }
+    }
+
+    function toggleVoice() {
+        if (!recognition) {
+            alert('Speech recognition is not supported in your browser');
+            return;
+        }
+
+        if (isRecording) {
+            recognition.stop();
+        } else {
+            recognition.start();
+            isRecording = true;
+            document.getElementById('voiceBtn').classList.add('recording');
+            document.getElementById('voiceIcon').textContent = 'STOP';
+            document.getElementById('voiceText').textContent = 'Recording...';
+        }
+    }
+
+    function stopRecording() {
+        isRecording = false;
+        document.getElementById('voiceBtn').classList.remove('recording');
+        document.getElementById('voiceIcon').textContent = 'MIC';
+        document.getElementById('voiceText').textContent = 'Hold to Speak';
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    async function sendMessage(voiceTranscript = null) {
+        const input = document.getElementById('messageInput');
+        const message = voiceTranscript || input.value.trim();
+        
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, 'user', voiceTranscript ? voiceTranscript : null);
+        input.value = '';
+        messageCount++;
+        document.getElementById('messageCount').textContent = messageCount;
+
+        // Show loading
+        const loadingId = addLoadingMessage();
+
+        // Get AI response
+        try {
+            const response = await getGeminiResponse(message);
+            removeMessage(loadingId);
+            displayAIResponse(response);
+        } catch (error) {
+            removeMessage(loadingId);
+            addMessage('Lo siento, there was an error. Please check your API key and try again.', 'assistant');
+            console.error('Error:', error);
+        }
+    }
+
+    async function getGeminiResponse(userMessage) {
+        conversationHistory.push({
+            role: 'user',
+            parts: [{ text: userMessage }]
+        });
+
+        // CRITICAL: Trim history to reduce token usage
+        if (conversationHistory.length > MAX_HISTORY) {
+            conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+        }
+
+        const systemPrompt = `You are an expert Spanish language tutor specializing in ${currentDialect === 'paisa' ? 'Paisa (Colombian, especially Medellín)' : 'Boricua (Puerto Rican)'} dialect. 
+
+
+Your student is fluent but wants to practice speaking more QUICKLY and naturally in the ${currentDialect} dialect. Speed and fluency are critical goals.
+
+RESPONSE FORMAT - Return ONLY valid JSON with this exact structure:
+{
+“response”: “Your conversational response in Spanish (${currentDialect} dialect)”,
+“feedback”: {
+“errors”: [
+{
+“type”: “severe|mild”,
+“original”: “what they said”,
+“correction”: “correct version”,
+“explanation”: “why and how to improve”
+}
+],
+“dialectNotes”: [
+{
+“term”: “specific word or phrase”,
+“note”: “dialect-specific explanation”,
+“alternative”: “how a ${currentDialect} speaker would say it”
+}
+],
+“speedAndFluency”: {
+“issue”: “What’s slowing them down (complex constructions, hesitation patterns, unnatural word order, etc.)”,
+“fasterAlternative”: “How a native speaker would say it more quickly/naturally”,
+“tip”: “Specific advice for speaking faster”
+},
+“culturalContext”: {
+“present”: true|false,
+“explanation”: “cultural context if relevant”
+},
+“naturalness”: {
+“score”: 1-10,
+“suggestion”: “how to sound more natural”
+}
+},
+“topicSuggestion”: “suggested conversation topic based on weak spots or null”
+}
+
+CORRECTION PHILOSOPHY:
+
+- Severe errors: Only interrupt for major grammar mistakes or inappropriate word choices
+- Mild errors: Note minor improvements but don’t interrupt the flow
+- Dialect-specific: Always note when student uses wrong dialect or could sound more native
+- SPEED FOCUS: Identify overly complex constructions, unnatural word order, or anything that would slow down natural speech. Suggest faster, more colloquial alternatives.
+- Cultural context: Explain idioms, cultural references, or social norms when relevant
+- Be encouraging and conversational
+
+Remember: The goal is to help them speak FASTER and more fluently, not just correctly. Native speakers use shortcuts, contractions, and simplified constructions.`;
+
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: systemPrompt }]
+                    },
+                    ...conversationHistory
+                ],
+                generationConfig: {
+                    temperature: 0.8,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 800, // Increased from 512 to accommodate speed feedback
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const aiText = data.candidates[0].content.parts[0].text;
+        
+        // Extract JSON from response (handle markdown code blocks)
+        let jsonText = aiText.trim();
+        if (jsonText.startsWith('```json')) {
+            jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        } else if (jsonText.startsWith('```')) {
+            jsonText = jsonText.replace(/```\n?/g, '').trim();
+        }
+        
+        const parsedResponse = JSON.parse(jsonText);
+
+        conversationHistory.push({
+            role: 'model',
+            parts: [{ text: parsedResponse.response }]
+        });
+
+        // Trim again after adding response
+        if (conversationHistory.length > MAX_HISTORY) {
+            conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+        }
+
+        return parsedResponse;
+    }
+
+    function displayAIResponse(aiResponse) {
+        const { response, feedback, topicSuggestion } = aiResponse;
+
+        // Add main response
+        const messageEl = addMessage(response, 'assistant');
+
+        // Add feedback cards
+        if (feedback.errors && feedback.errors.length > 0) {
+            feedback.errors.forEach(error => {
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = `feedback-card ${error.type}`;
+                feedbackDiv.innerHTML = `
+                    <div class="feedback-label">
+                        ${error.type === 'severe' ? 'Important' : 'Suggestion'}
+                    </div>
+                    <div><strong>You said:</strong> "${error.original}"</div>
+                    <div><strong>Better:</strong> "${error.correction}"</div>
+                    <div style="margin-top: 4px; color: #666;">${error.explanation}</div>
+                `;
+                messageEl.querySelector('.message-content').appendChild(feedbackDiv);
+                correctionCount++;
+            });
+        }
+
+        // Add speed and fluency feedback (NEW)
+        if (feedback.speedAndFluency && feedback.speedAndFluency.issue) {
+            const speedDiv = document.createElement('div');
+            speedDiv.className = 'feedback-card';
+            speedDiv.style.background = '#e7f3ff';
+            speedDiv.style.borderLeftColor = '#2196F3';
+            speedDiv.innerHTML = `
+                <div class="feedback-label">
+                    Speed & Fluency
+                </div>
+                <div><strong>What's slowing you down:</strong> ${feedback.speedAndFluency.issue}</div>
+                <div style="margin-top: 4px;"><strong>Say it faster:</strong> "${feedback.speedAndFluency.fasterAlternative}"</div>
+                <div style="margin-top: 4px; color: #666;"><strong>Tip:</strong> ${feedback.speedAndFluency.tip}</div>
+            `;
+            messageEl.querySelector('.message-content').appendChild(speedDiv);
+        }
+
+        // Add dialect notes
+        if (feedback.dialectNotes && feedback.dialectNotes.length > 0) {
+            feedback.dialectNotes.forEach(note => {
+                const dialectDiv = document.createElement('div');
+                dialectDiv.className = 'feedback-card dialect';
+                dialectDiv.innerHTML = `
+                    <div class="feedback-label">
+                        <span class="dialect-badge ${currentDialect}">${currentDialect}</span>
+                        Dialect Note
+                    </div>
+                    <div><strong>"${note.term}"</strong></div>
+                    <div style="margin-top: 4px;">${note.note}</div>
+                    ${note.alternative ? `<div style="margin-top: 4px;"><strong>More natural:</strong> "${note.alternative}"</div>` : ''}
+                `;
+                messageEl.querySelector('.message-content').appendChild(dialectDiv);
+            });
+        }
+
+        // Add cultural context
+        if (feedback.culturalContext && feedback.culturalContext.present) {
+            const culturalDiv = document.createElement('div');
+            culturalDiv.className = 'cultural-note';
+            culturalDiv.innerHTML = `
+                <div class="cultural-note-title">Cultural Context</div>
+                <div>${feedback.culturalContext.explanation}</div>
+            `;
+            messageEl.querySelector('.message-content').appendChild(culturalDiv);
+        }
+
+        // Add naturalness score
+        if (feedback.naturalness) {
+            const naturalDiv = document.createElement('div');
+            naturalDiv.className = 'feedback-card';
+            naturalDiv.innerHTML = `
+                <div class="feedback-label">
+                    Naturalness: ${feedback.naturalness.score}/10
+                </div>
+                <div style="color: #666;">${feedback.naturalness.suggestion}</div>
+            `;
+            messageEl.querySelector('.message-content').appendChild(naturalDiv);
+        }
+
+        // Update stats
+        document.getElementById('correctionCount').textContent = correctionCount;
+        
+        if (topicSuggestion) {
+            document.getElementById('currentTopic').textContent = topicSuggestion;
+        }
+    }
+
+    function addMessage(text, sender, transcript = null) {
+        const chatContainer = document.getElementById('chatContainer');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        messageDiv.id = `msg-${Date.now()}`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">${sender === 'user' ? 'U' : 'AI'}</div>
+            <div class="message-content">
+                <div class="message-bubble">${text}</div>
+                ${transcript ? `<div class="transcript">Transcribed: "${transcript}"</div>` : ''}
+            </div>
+        `;
+        
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return messageDiv;
+    }
+
+    function addLoadingMessage() {
+        const chatContainer = document.getElementById('chatContainer');
+        const loadingDiv = document.createElement('div');
+        const loadingId = `loading-${Date.now()}`;
+        loadingDiv.id = loadingId;
+        loadingDiv.className = 'message assistant';
+        
+        loadingDiv.innerHTML = `
+            <div class="message-avatar">AI</div>
+            <div class="message-content">
+                <div class="message-bubble loading">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            </div>
+        `;
+        
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return loadingId;
+    }
+
+    function removeMessage(messageId) {
+        const message = document.getElementById(messageId);
+        if (message) {
+            message.remove();
+        }
+    }
+</script>
+```
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Environment variables
+.env
+.env.local
+
+# API keys (just in case)
+*api-key*
+*apikey*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if you add build tools later)
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
