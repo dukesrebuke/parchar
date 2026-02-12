@@ -690,7 +690,7 @@ Remember: The goal is to help them speak FASTER and more fluently, not just corr
                         temperature: 0.8,
                         topK: 40,
                         topP: 0.95,
-                        maxOutputTokens: 800, // Increased from 512 to accommodate speed feedback
+                        maxOutputTokens: 2048, // Increased to prevent truncation of JSON responses
                     }
                 })
             });
@@ -700,6 +700,12 @@ Remember: The goal is to help them speak FASTER and more fluently, not just corr
             }
 
             const data = await response.json();
+            
+            // Check if response was truncated
+            if (data.candidates[0].finishReason === 'MAX_TOKENS') {
+                throw new Error('Response was truncated. The AI response was too long. Please try again with a shorter message.');
+            }
+            
             const aiText = data.candidates[0].content.parts[0].text;
             
             // Extract JSON from response (handle markdown code blocks)
