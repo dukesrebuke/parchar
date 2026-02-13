@@ -380,6 +380,56 @@
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
+        .scenario-selector {
+            padding: 16px 24px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .scenario-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .scenario-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .scenario-btn:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .scenario-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .scenario-description {
+            width: 100%;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
         .transcript {
             margin-top: 8px;
             padding: 8px 12px;
@@ -425,9 +475,20 @@
                 </div>
             </div>
 
+            <div class="scenario-selector">
+                <span class="scenario-label">Scenario:</span>
+                <button class="scenario-btn" onclick="setScenario('free')">Free Conversation</button>
+                <button class="scenario-btn" onclick="setScenario('restaurant')">Restaurant</button>
+                <button class="scenario-btn" onclick="setScenario('market')">Market/Shopping</button>
+                <button class="scenario-btn" onclick="setScenario('directions')">Asking Directions</button>
+                <button class="scenario-btn" onclick="setScenario('story')">Telling a Story</button>
+                <button class="scenario-btn" onclick="setScenario('negotiation')">Negotiating Price</button>
+                <button class="scenario-btn" onclick="setScenario('social')">Social Gathering</button>
+                <button class="scenario-btn" onclick="setScenario('work')">Work/Professional</button>
+                <div class="scenario-description" id="scenarioDescription" style="display: none;"></div>
+            </div>
+
             <div class="chat-container" id="chatContainer">
-                <div class="message assistant">
-                </div>
             </div>
 
             <div class="stats-bar">
@@ -471,7 +532,51 @@
         let isRecording = false;
         let recognition = null;
         let currentMode = 'text';
+        let currentScenario = 'free';
         const MAX_HISTORY = 6; // Only keep last 6 messages (3 exchanges) to minimize tokens
+
+        const scenarios = {
+            free: {
+                name: 'Free Conversation',
+                description: 'Practice natural, unstructured conversation about any topic.',
+                context: 'casual conversation with no specific goal'
+            },
+            restaurant: {
+                name: 'Restaurant',
+                description: 'Order food, ask about dishes, request the check, discuss preferences with a waiter.',
+                context: 'at a restaurant ordering food and interacting with staff'
+            },
+            market: {
+                name: 'Market/Shopping',
+                description: 'Ask for prices, negotiate, request items, discuss quality and quantities at a market or store.',
+                context: 'shopping at a market or store, asking about products and prices'
+            },
+            directions: {
+                name: 'Asking Directions',
+                description: 'Ask for and give directions, describe locations, discuss transportation options.',
+                context: 'asking for or giving directions to navigate the city'
+            },
+            story: {
+                name: 'Telling a Story',
+                description: 'Practice narrating past events, describing experiences, using past tenses naturally and quickly.',
+                context: 'telling a story or describing a past experience'
+            },
+            negotiation: {
+                name: 'Negotiating Price',
+                description: 'Haggle over prices, make counteroffers, justify your position, find common ground.',
+                context: 'negotiating a price or deal with a vendor or seller'
+            },
+            social: {
+                name: 'Social Gathering',
+                description: 'Meet new people, make small talk, discuss current events, share opinions at a party or gathering.',
+                context: 'at a social gathering meeting new people and making conversation'
+            },
+            work: {
+                name: 'Work/Professional',
+                description: 'Discuss projects, schedule meetings, handle professional correspondence, present ideas.',
+                context: 'in a professional work environment discussing business matters'
+            }
+        };
 
         const dialectInfo = {
             paisa: {
@@ -495,11 +600,15 @@
             API_KEY = apiKey;
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'flex';
+            
+            // Set initial scenario
+            document.querySelector('.scenario-btn').classList.add('active');
+            
+            // Add initial welcome message using addMessage function
             addMessage(
-             `¡Hola! Soy tu compañero de práctica. I'll help you speak Spanish faster and more naturally with dialect-specific feedback for ${currentDialect === 'paisa' ? 'Paisa' : 'Boricua'} Spanish. I'll point out when you're using constructions that slow you down and suggest faster, more colloquial alternatives. Ready to practice?`,
-             'assistant'
-);
-
+                `¡Hola! Soy tu compañero de práctica. I'll help you speak Spanish faster and more naturally with dialect-specific feedback for ${currentDialect === 'paisa' ? 'Paisa' : 'Boricua'} Spanish. Choose a scenario above to start practicing, or stick with free conversation. Ready?`,
+                'assistant'
+            );
             
             // Initialize speech recognition if available
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -531,6 +640,46 @@
             document.querySelectorAll('.dialect-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.dialect === dialect);
             });
+        }
+
+        function setScenario(scenario) {
+            currentScenario = scenario;
+            
+            // Update button states
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide description
+            const descEl = document.getElementById('scenarioDescription');
+            if (scenario === 'free') {
+                descEl.style.display = 'none';
+            } else {
+                descEl.textContent = scenarios[scenario].description;
+                descEl.style.display = 'block';
+            }
+            
+            // Update current topic stat
+            document.getElementById('currentTopic').textContent = scenarios[scenario].name;
+            
+            // Add system message about scenario change
+            const chatContainer = document.getElementById('chatContainer');
+            const scenarioMsg = document.createElement('div');
+            scenarioMsg.style.textAlign = 'center';
+            scenarioMsg.style.padding = '12px';
+            scenarioMsg.style.color = '#666';
+            scenarioMsg.style.fontSize = '13px';
+            scenarioMsg.style.fontStyle = 'italic';
+            scenarioMsg.style.borderTop = '1px solid #e9ecef';
+            scenarioMsg.style.borderBottom = '1px solid #e9ecef';
+            scenarioMsg.style.margin = '16px 0';
+            scenarioMsg.textContent = `Scenario changed to: ${scenarios[scenario].name}`;
+            chatContainer.appendChild(scenarioMsg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Reset conversation history when changing scenarios
+            conversationHistory = [];
         }
 
         function setMode(mode) {
@@ -626,6 +775,9 @@
 
 Your student is fluent but wants to practice speaking more QUICKLY and naturally in the ${currentDialect} dialect. Speed and fluency are critical goals.
 
+CURRENT SCENARIO: ${scenarios[currentScenario].name}
+The student is practicing ${scenarios[currentScenario].context}. Stay in character and respond naturally to this scenario. Use vocabulary and expressions appropriate for this situation.
+
 RESPONSE FORMAT - Return ONLY valid JSON with this exact structure:
 {
     "response": "Your conversational response in Spanish (${currentDialect} dialect)",
@@ -689,7 +841,7 @@ Remember: The goal is to help them speak FASTER and more fluently, not just corr
                         temperature: 0.8,
                         topK: 40,
                         topP: 0.95,
-                        maxOutputTokens: 3000, // Increased to prevent truncation of JSON responses
+                        maxOutputTokens: 2048, // Increased to prevent truncation of JSON responses
                     }
                 })
             });
